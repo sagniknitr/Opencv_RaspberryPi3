@@ -3,13 +3,15 @@ from picamera import PiCamera
 import time
 import cv2
 import numpy as np
-
+import serial
 # initialize the camera and grab a reference to the raw camera capture
 camera = PiCamera()
 camera.resolution = (640, 380)
 camera.framerate = 60
 rawCapture = PiRGBArray(camera, size=(640, 380))
-
+SerD = serial.Serial("/dev/rfcomm0",115200)
+def sendData(data):
+	SerD.write(data)
 
 def initiate_script():
 	print 'Welcome user to SMART HELMET program'
@@ -45,7 +47,7 @@ def HOG_process():
 		cv2.imshow('GrayScale',gray)
 		cv2.imshow('GX',gx)
 		cv2.imshow('GY',gy)
-
+		sendData("10")
                 k = cv2.waitKey(5)
                 rawCapture.truncate(0)  # very important while using RPI Cam
                 if k == ord('q'):
@@ -55,10 +57,12 @@ def HOG_process():
 
 
 def main():
-
                 initiate_script()
                 print 'Now starting python script color detect'
                 HOG_process()
 
-
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+	try:
+		main()
+	except KeyboardInterrupt:
+		SerD.close()
